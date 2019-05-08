@@ -99,8 +99,8 @@ let binop_to_concrete_str (bin : binop) : string =
   
 let binop_to_abstract_str (bin :binop) : string =
   match bin with
-  | Plus -> " Plus " | Minus -> " Minus " | Times -> " Times " | Equals -> " Equals " 
-  | LessThan -> " LessThan " ;;
+  | Plus -> "Plus" | Minus -> "Minus" | Times -> "Times" | Equals -> "Equals" 
+  | LessThan -> "LessThan" ;;
 
 
 (* exp_to_concrete_string : expr -> string
@@ -138,28 +138,25 @@ let rec exp_to_concrete_string exp =
    Returns a string representation of the abstract syntax of the expr *)
 let rec exp_to_abstract_string (exp : expr) : string =
   match exp with
-  | Num (itgr) -> (string_of_int itgr)
-  | Var (varbl) -> varbl
-  | Bool (b) -> (string_of_bool b)
-  | Unop (Negate,e) -> 
-                  (match e with
-                  | Bool (tf) -> "not " ^ (string_of_bool tf) 
-                  | _ -> " ~- (" ^ (exp_to_concrete_string e) ^ ")")
-  | Binop (b,e1,e2) -> (exp_to_concrete_string e1) ^ (binop_to_str b) ^
-                        (exp_to_concrete_string e2)   
-            
-  | Conditional (c,t,e) -> "if " ^ (exp_to_concrete_string c) ^ 
-                          "\nthen " ^ (exp_to_concrete_string t) ^
-                          "\nelse " ^ (exp_to_concrete_string e) 
-  | Fun (v,e) -> "fun " ^ v ^ " -> " ^
-                (exp_to_concrete_string e) 
-  | Let (v,eq,ex) -> "let " ^ v ^ " = " ^  
-                    (exp_to_concrete_string eq) ^ " in " ^ 
-                    (exp_to_concrete_string ex) 
-  | Letrec (v,eq,ex) -> "let rec " ^ v ^ " = " ^ 
-                       (exp_to_concrete_string eq) ^ " in " ^ 
-                       (exp_to_concrete_string ex) 
-  | App (f,arg) -> (exp_to_concrete_string f) ^ " " ^
-                     (exp_to_concrete_string arg) 
+  | Num (itgr) -> "Num(" ^ (string_of_int itgr) ^ ")"
+  | Var (varbl) -> "Var(" ^ varbl ^ ")"
+  | Bool (b) -> "Bool(" ^ (string_of_bool b) ^ ")"
+  | Unop (Negate,e) -> "Unop(Negate, " ^ (exp_to_abstract_string e) ^ ")"
+  | Binop (b,e1,e2) -> "Binop(" ^ (binop_to_abstract_str b) ^ 
+                       ", " ^ (exp_to_abstract_string e1) ^ 
+                       ", " ^ (exp_to_abstract_string e2) ^ ")"
+  | Conditional (c,t,e) -> "Conditional(" ^ (exp_to_abstract_string c) ^ 
+                          ", " ^ (exp_to_abstract_string t) ^
+                          ", " ^ (exp_to_abstract_string e) ^ ")"
+  | Fun (v,e) -> "Fun(" ^ v ^ ", " ^
+                (exp_to_abstract_string e) ^ ")" 
+  | Let (v,eq,ex) -> "Let(" ^ v ^ ", " ^  
+                    (exp_to_abstract_string eq) ^ ", " ^ 
+                    (exp_to_abstract_string ex) ^ ")"
+  | Letrec (v,eq,ex) -> "Letrec(" ^ v ^ ", " ^ 
+                       (exp_to_abstract_string eq) ^ ", " ^ 
+                       (exp_to_abstract_string ex) ^ ")"
+  | App (f,arg) -> "App(" ^ (exp_to_abstract_string f) ^ ", " ^
+                     (exp_to_abstract_string arg) ^ ")"
   | Raise -> "Raise" 
   | Unassigned -> "Unassigned" ;;
