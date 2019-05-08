@@ -104,38 +104,37 @@ let eval_t (exp : expr) (_env : Env.env) : Env.value =
 let binopeval (op : binop) (v1 : expr) (v2 : expr) : expr =
   match op, v1, v2 with
   | Plus, Num x1, Num x2 -> Num (x1 + x2)
-  | Plus, _, _ -> raise Exit
+  | Plus, _, _ -> raise EvalException
   | Minus, Num x1, Num x2 -> Num (x1 - x2)
-  | Minus, _, _ -> raise Exit
+  | Minus, _, _ -> raise EvalException
   | Times, Num x1, Num x2 -> Num (x1 * x2)
-  | Times, _, _ -> raise Exit
+  | Times, _, _ -> raise EvalException
   | Equals, Num x1, Num x2 -> Bool (x1 = x2)
   | Equals, Bool b1, Bool b2 -> Bool (b1 = b2)
-  | Equals, _, _ -> raise Exit
+  | Equals, _, _ -> raise EvalException
   | LessThan, Num x1, Num x2 -> Bool (x1 < x2)
-  | LessThan, _, _ -> raise Exit ;;
+  | LessThan, _, _ -> raise EvalException ;;
   
 let unopeval (op : unop) (e : expr) : expr = 
   match op, e with 
   | Negate, Num x -> Num (~- x)
   | Negate, Bool b -> Bool (not b)
-  | Negate, _ -> raise Exit ;;
+  | Negate, _ -> raise EvalException ;;
 
 let rec eval (xpr : expr) : expr = 
     match xpr with
-    | Num _ | Bool _ | Raise | Unassigned -> xpr
-    | Var (x) -> Unassigned
+    | Num _ | Bool _ | Raise | Unassigned | Var _ -> xpr
     | Unop (op, e1) -> unopeval op (eval e1)
     | Binop (op, e1, e2) -> binopeval op (eval e1) (eval e2)
     | Let (x, def, body) -> eval (subst x (eval def) body)
     | Letrec (x, def, body) -> eval (subst x (eval def) body)
-    | Fun _ -> xpr
+    | Fun (_f_arg, _f_body) -> xpr
     | App (arg1, arg2) -> 
       (match arg1 with
-       | Fun (f_arg, f_body) -> eval (subst f_arg (eval arg2) f_body)
-       | _ -> raise Exit)
+       | Fun (f_arg, f_body) -> eval (Let ((f_arg), (eval arg2), f_body))
+       | _ -> eval (App ((eval arg1), eval arg2)))
     | Conditional (c, t, e) -> 
-      (if eval c = Bool (true) then eval t else eval e) ;;
+      if eval c = Bool (true) then eval t else eval e ;;
 
 let eval_s (exp : expr) (_env : Env.env) : Env.value =
   Env.Val (eval exp) ;;
@@ -169,4 +168,4 @@ let eval_e _ =
    above, not the evaluate function, so it doesn't matter how it's set
    when you submit your solution.) *)
    
-let evaluate = eval_t ;;
+let evaluate = eval_s ;;
