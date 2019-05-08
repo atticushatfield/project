@@ -91,13 +91,20 @@ let subst (var_name : varid) (repl : expr) (exp : expr) : expr =
  *)
    
     
-(* exp_to_concrete_string : expr -> string
-   Returns a concrete syntax string representation of the expr *)
+(* helpers to simplify the Binop match case in exp_to_whatever_string functions *)
 let binop_to_concrete_str (bin : binop) : string =
   match bin with
   | Plus -> " + " | Minus -> " - " | Times -> " * " | Equals -> " = " 
   | LessThan -> " < " ;;
+  
+let binop_to_abstract_str (bin :binop) : string =
+  match bin with
+  | Plus -> " Plus " | Minus -> " Minus " | Times -> " Times " | Equals -> " Equals " 
+  | LessThan -> " LessThan " ;;
 
+
+(* exp_to_concrete_string : expr -> string
+   Returns a concrete syntax string representation of the expr *)
 let rec exp_to_concrete_string exp =
   match exp with
   | Num (itgr) -> (string_of_int itgr)
@@ -126,7 +133,10 @@ let rec exp_to_concrete_string exp =
   | Raise -> "Raise" 
   | Unassigned -> "Unassigned" ;;
 
-let rec exp_to_concrete_string exp =
+
+(* exp_to_abstract_string : expr -> string
+   Returns a string representation of the abstract syntax of the expr *)
+let rec exp_to_abstract_string (exp : expr) : string =
   match exp with
   | Num (itgr) -> (string_of_int itgr)
   | Var (varbl) -> varbl
@@ -153,9 +163,3 @@ let rec exp_to_concrete_string exp =
                      (exp_to_concrete_string arg) 
   | Raise -> "Raise" 
   | Unassigned -> "Unassigned" ;;
-
-
-(* exp_to_abstract_string : expr -> string
-   Returns a string representation of the abstract syntax of the expr *)
-let exp_to_abstract_string (exp : expr) : string =
-   ;;
