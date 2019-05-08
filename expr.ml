@@ -93,10 +93,69 @@ let subst (var_name : varid) (repl : expr) (exp : expr) : expr =
     
 (* exp_to_concrete_string : expr -> string
    Returns a concrete syntax string representation of the expr *)
-let exp_to_concrete_string (exp : expr) : string =
-  failwith "exp_to_concrete_string not implemented" ;;
+let binop_to_concrete_str (bin : binop) : string =
+  match bin with
+  | Plus -> " + " | Minus -> " - " | Times -> " * " | Equals -> " = " 
+  | LessThan -> " < " ;;
+
+let rec exp_to_concrete_string exp =
+  match exp with
+  | Num (itgr) -> (string_of_int itgr)
+  | Var (varbl) -> varbl
+  | Bool (b) -> (string_of_bool b)
+  | Unop (Negate,e) -> 
+                  (match e with
+                  | Bool (tf) -> "not " ^ (string_of_bool tf) 
+                  | _ -> " ~- (" ^ (exp_to_concrete_string e) ^ ")")
+  | Binop (b,e1,e2) -> (exp_to_concrete_string e1) ^ (binop_to_concrete_str b) ^
+                        (exp_to_concrete_string e2)   
+            
+  | Conditional (c,t,e) -> "if " ^ (exp_to_concrete_string c) ^ 
+                          "\nthen " ^ (exp_to_concrete_string t) ^
+                          "\nelse " ^ (exp_to_concrete_string e) 
+  | Fun (v,e) -> "fun " ^ v ^ " -> " ^
+                (exp_to_concrete_string e) 
+  | Let (v,eq,ex) -> "let " ^ v ^ " = " ^  
+                    (exp_to_concrete_string eq) ^ " in " ^ 
+                    (exp_to_concrete_string ex) 
+  | Letrec (v,eq,ex) -> "let rec " ^ v ^ " = " ^ 
+                       (exp_to_concrete_string eq) ^ " in " ^ 
+                       (exp_to_concrete_string ex) 
+  | App (f,arg) -> (exp_to_concrete_string f) ^ " " ^
+                     (exp_to_concrete_string arg) 
+  | Raise -> "Raise" 
+  | Unassigned -> "Unassigned" ;;
+
+let rec exp_to_concrete_string exp =
+  match exp with
+  | Num (itgr) -> (string_of_int itgr)
+  | Var (varbl) -> varbl
+  | Bool (b) -> (string_of_bool b)
+  | Unop (Negate,e) -> 
+                  (match e with
+                  | Bool (tf) -> "not " ^ (string_of_bool tf) 
+                  | _ -> " ~- (" ^ (exp_to_concrete_string e) ^ ")")
+  | Binop (b,e1,e2) -> (exp_to_concrete_string e1) ^ (binop_to_str b) ^
+                        (exp_to_concrete_string e2)   
+            
+  | Conditional (c,t,e) -> "if " ^ (exp_to_concrete_string c) ^ 
+                          "\nthen " ^ (exp_to_concrete_string t) ^
+                          "\nelse " ^ (exp_to_concrete_string e) 
+  | Fun (v,e) -> "fun " ^ v ^ " -> " ^
+                (exp_to_concrete_string e) 
+  | Let (v,eq,ex) -> "let " ^ v ^ " = " ^  
+                    (exp_to_concrete_string eq) ^ " in " ^ 
+                    (exp_to_concrete_string ex) 
+  | Letrec (v,eq,ex) -> "let rec " ^ v ^ " = " ^ 
+                       (exp_to_concrete_string eq) ^ " in " ^ 
+                       (exp_to_concrete_string ex) 
+  | App (f,arg) -> (exp_to_concrete_string f) ^ " " ^
+                     (exp_to_concrete_string arg) 
+  | Raise -> "Raise" 
+  | Unassigned -> "Unassigned" ;;
+
 
 (* exp_to_abstract_string : expr -> string
    Returns a string representation of the abstract syntax of the expr *)
 let exp_to_abstract_string (exp : expr) : string =
-  failwith "exp_to_abstract_string not implemented" ;;
+   ;;

@@ -6,7 +6,7 @@ expr: expr.ml expr.mli
 helpers : helpers.ml expr
 	ocamlbuild -use-ocamlfind helpers.byte
 
-miniml : miniml.ml miniml_lex.mll miniml_parse.mly
+miniml : miniml.ml 
 	ocamlbuild -use-ocamlfind miniml.byte
 
 clean: 
