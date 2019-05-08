@@ -64,7 +64,22 @@ let vars_of_list : string list -> varidset =
    Return a set of the variable names that are free in expression
    exp *)
 let free_vars (exp : expr) : varidset =
-  failwith "free_vars not implemented" ;;
+  let fv_set = SS.empty in
+  let rec free_vars' (xpr : expr) : varidset =
+    match xpr with
+    | Num (itgr) -> SS.empty
+    | Var (varbl) -> (SS.add varbl fv_set)
+    | Bool (b) -> SS.empty
+    | Unop (Negate,e) -> (free_vars' e)
+    | Binop (b,e1,e2) -> (SS.union (free_vars' e1) (free_vars' e2))
+    | Conditional (c,t,e) -> (SS.union (free_vars' c) (SS.union (free_vars' t) (free_vars' e)))
+    | Fun (v,e) -> (SS.remove  v (free_vars' e))
+    | Let (v,eq,ex) -> (SS.union (SS.remove v (free_vars' ex)) (free_vars' eq))
+    | Letrec (v,eq,ex) -> (SS.union (SS.remove v (free_vars' ex)) (free_vars' eq))
+    | App (f,arg) -> SS.union (free_vars' f) (free_vars' arg) 
+    | Raise -> SS.empty
+    | Unassigned -> SS.empty
+  in SS.union fv_set (free_vars' exp) ;;
   
 (* new_varname : unit -> varid
    Return a fresh variable, constructed with a running counter a la
