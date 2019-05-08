@@ -121,8 +121,7 @@ let unopeval (op : unop) (e : expr) : expr =
   | Negate, Bool b -> Bool (not b)
   | Negate, _ -> raise Exit ;;
 
-let eval_s (_exp : expr) (_env : Env.env) : Env.value =
-  let rec eval xpr = 
+let rec eval (xpr : expr) : expr = 
     match xpr with
     | Num _ | Bool _ | Raise | Unassigned -> xpr
     | Var (x) -> Unassigned
@@ -136,8 +135,9 @@ let eval_s (_exp : expr) (_env : Env.env) : Env.value =
        | Fun (f_arg, f_body) -> eval (subst f_arg (eval arg2) f_body)
        | _ -> raise Exit)
     | Conditional (c, t, e) -> 
-      if eval c = Bool (true) then eval t else eval e
-    in 
+      (if eval c = Bool (true) then eval t else eval e) ;;
+
+let eval_s (exp : expr) (_env : Env.env) : Env.value =
   Env.Val (eval exp) ;;
 
      

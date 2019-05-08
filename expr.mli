@@ -61,6 +61,12 @@ val subst : varid -> expr -> expr -> expr
 
 (* exp_to_concrete_string e -- Return a string representation of the concrete
    syntax of the expression e *)
+
+(* binop_to_x_str -- helper function for convertin binops to abstract string *)
+val binop_to_concrete_str : binop -> string
+
+val binop_to_abstract_str : binop -> string
+
 val exp_to_concrete_string : expr -> string
 
 (* exp_to_abstract_string e -- Return a string representation of the

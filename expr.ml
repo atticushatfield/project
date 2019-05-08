@@ -135,7 +135,7 @@ let binop_to_concrete_str (bin : binop) : string =
   | Plus -> " + " | Minus -> " - " | Times -> " * " | Equals -> " = " 
   | LessThan -> " < " ;;
   
-let binop_to_abstract_str (bin :binop) : string =
+let binop_to_abstract_str (bin : binop) : string =
   match bin with
   | Plus -> "Plus" | Minus -> "Minus" | Times -> "Times" | Equals -> "Equals" 
   | LessThan -> "LessThan" ;;
