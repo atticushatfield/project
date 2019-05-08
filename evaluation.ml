@@ -98,9 +98,48 @@ let eval_t (exp : expr) (_env : Env.env) : Env.value =
   Env.Val exp ;;
 
 (* The SUBSTITUTION MODEL evaluator -- to be completed *)
-   
+
+(* helpers for evaluating binops and unops *)
+
+let binopeval (op : binop) (v1 : expr) (v2 : expr) : expr =
+  match op, v1, v2 with
+  | Plus, Num x1, Num x2 -> Num (x1 + x2)
+  | Plus, _, _ -> raise Exit
+  | Minus, Num x1, Num x2 -> Num (x1 - x2)
+  | Minus, _, _ -> raise Exit
+  | Times, Num x1, Num x2 -> Num (x1 * x2)
+  | Times, _, _ -> raise Exit
+  | Equals, Num x1, Num x2 -> Bool (x1 = x2)
+  | Equals, Bool b1, Bool b2 -> Bool (b1 = b2)
+  | Equals, _, _ -> raise Exit
+  | LessThan, Num x1, Num x2 -> Bool (x1 < x2)
+  | LessThan, _, _ -> raise Exit ;;
+  
+let unopeval (op : unop) (e : expr) : expr = 
+  match op, e with 
+  | Negate, Num x -> Num (~- x)
+  | Negate, Bool b -> Bool (not b)
+  | Negate, _ -> raise Exit ;;
+
 let eval_s (_exp : expr) (_env : Env.env) : Env.value =
-  failwith "eval_s not implemented" ;;
+  let rec eval xpr = 
+    match xpr with
+    | Num _ | Bool _ | Raise | Unassigned -> xpr
+    | Var (x) -> Unassigned
+    | Unop (op, e1) -> unopeval op (eval e1)
+    | Binop (op, e1, e2) -> binopeval op (eval e1) (eval e2)
+    | Let (x, def, body) -> eval (subst x (eval def) body)
+    | Letrec (x, def, body) -> eval (subst x (eval def) body)
+    | Fun _ -> xpr
+    | App (arg1, arg2) -> 
+      (match arg1 with
+       | Fun (f_arg, f_body) -> eval (subst f_arg (eval arg2) f_body)
+       | _ -> raise Exit)
+    | Conditional (c, t, e) -> 
+      if eval c = Bool (true) then eval t else eval e
+    in 
+  Env.Val (eval exp) ;;
+
      
 (* The DYNAMICALLY-SCOPED ENVIRONMENT MODEL evaluator -- to be
    completed *)

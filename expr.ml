@@ -68,13 +68,13 @@ let free_vars (exp : expr) : varidset =
   let rec free_vars' (xpr : expr) : varidset =
     match xpr with
     | Num (itgr) -> SS.empty
-    | Var (varbl) -> (SS.add varbl fv_set)
+    | Var (varbl) -> SS.singleton varbl
     | Bool (b) -> SS.empty
-    | Unop (Negate,e) -> (free_vars' e)
-    | Binop (b,e1,e2) -> (SS.union (free_vars' e1) (free_vars' e2))
+    | Unop (_,e) -> (free_vars' e)
+    | Binop (_,e1,e2) -> (SS.union (free_vars' e1) (free_vars' e2))
     | Conditional (c,t,e) -> (SS.union (free_vars' c) (SS.union (free_vars' t) (free_vars' e)))
     | Fun (v,e) -> (SS.remove  v (free_vars' e))
-    | Let (v,eq,ex) -> (SS.union (SS.remove v (free_vars' ex)) (free_vars' eq))
+    | Let (v,ed,eb) -> (SS.union (SS.remove v (free_vars' eb)) (free_vars' ed))
     | Letrec (v,eq,ex) -> (SS.union (SS.remove v (free_vars' ex)) (free_vars' eq))
     | App (f,arg) -> SS.union (free_vars' f) (free_vars' arg) 
     | Raise -> SS.empty
@@ -85,8 +85,12 @@ let free_vars (exp : expr) : varidset =
    Return a fresh variable, constructed with a running counter a la
    gensym. Assumes no variable names use the prefix "var". (Otherwise,
    they might accidentally be the same as a generated variable name.) *)
+
 let new_varname () : varid =
-  failwith "new_varname not implemented" ;;
+  let c = ref 0 in
+  let x = (incr c; !c) in
+  "item " ^ (string_of_int x) ;;
+   
 
 (*......................................................................
   Substitution 
@@ -99,7 +103,26 @@ let new_varname () : varid =
 (* subst : varid -> expr -> expr -> expr
    Substitute repl for free occurrences of var_name in exp *)
 let subst (var_name : varid) (repl : expr) (exp : expr) : expr =
-  failwith "subst not implemented" ;;
+  let rec sub exp : expr =
+    match exp with
+    | Var (varbl) -> 
+      if varbl = var_name then repl else exp 
+    | Num _ -> exp
+    | Bool _ -> exp
+    | Unop (op,e) -> Unop (op, sub e)
+    | Binop (op,e1,e2) -> Binop (op, sub e1, sub e2)
+    | Conditional (c,t,e) -> Conditional (sub c, sub t, sub e)
+    | Fun (v,body) -> 
+      if v = var_name then Fun(v, sub body)
+      else Fun(v, sub body)
+    | Let (v,def,body) -> 
+      if v = var_name then Let (v, def, sub body)
+      else Let(v, sub def, sub body)
+    | Letrec (v,def,body) -> Letrec (v, sub def, sub body)
+    | App (f,arg) -> App(sub f, sub arg) 
+    | Raise -> exp
+    | Unassigned -> exp
+  in sub exp ;;
 
 (*......................................................................
   String representations of expressions
