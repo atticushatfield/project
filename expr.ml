@@ -72,10 +72,12 @@ let free_vars (exp : expr) : varidset =
     | Bool (b) -> SS.empty
     | Unop (_,e) -> (free_vars' e)
     | Binop (_,e1,e2) -> (SS.union (free_vars' e1) (free_vars' e2))
-    | Conditional (c,t,e) -> (SS.union (free_vars' c) (SS.union (free_vars' t) (free_vars' e)))
+    | Conditional (c,t,e) -> 
+      (SS.union (free_vars' c) (SS.union (free_vars' t) (free_vars' e)))
     | Fun (v,e) -> (SS.remove  v (free_vars' e))
     | Let (v,ed,eb) -> (SS.union (SS.remove v (free_vars' eb)) (free_vars' ed))
-    | Letrec (v,eq,ex) -> (SS.union (SS.remove v (free_vars' ex)) (free_vars' eq))
+    | Letrec (v,eq,ex) -> 
+      (SS.union (SS.remove v (free_vars' ex)) (free_vars' eq))
     | App (f,arg) -> SS.union (free_vars' f) (free_vars' arg) 
     | Raise -> SS.empty
     | Unassigned -> SS.empty
@@ -129,7 +131,8 @@ let subst (var_name : varid) (repl : expr) (exp : expr) : expr =
  *)
    
     
-(* helpers to simplify the Binop match case in exp_to_whatever_string functions *)
+(* helpers to simplify the Binop match case 
+  in exp_to_whatever_string functions *)
 let binop_to_concrete_str (bin : binop) : string =
   match bin with
   | Plus -> " + " | Minus -> " - " | Times -> " * " | Equals -> " = " 
