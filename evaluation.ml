@@ -45,28 +45,41 @@ module Env : Env_type =
     (* Creates a closure from an expression and the environment it's
        defined in *)
     let close (exp : expr) (env : env) : value =
-      failwith "close not implemented" ;;
+      Closure (exp, env) ;;
 
     (* Looks up the value of a variable in the environment *)
     let lookup (env : env) (varname : varid) : value =
-      failwith "lookup not implemented" ;;
+      let dissect (elt : varid * value ref) : bool =
+        match elt with
+        | v_id, _ -> if String.equal varname v_id then true else false 
+      in let env_val_elt = List.find (fun elt -> dissect elt) env
+      in match env_val_elt with
+         | _, value_ref -> !value_ref ;;
 
     (* Returns a new environment just like env except that it maps the
        variable varid to loc *)
     let extend (env : env) (varname : varid) (loc : value ref) : env =
-      failwith "extend not implemented" ;;
+      (varname, loc) :: env ;;
 
     (* Returns a printable string representation of a value; the flag
        printenvp determines whether to include the environment in the
        string representation when called on a closure *)
     let value_to_string ?(printenvp : bool = true) (v : value) : string =
-      failwith "value_to_string not implemented" ;;
+      match v with
+      | Val (expr) -> exp_to_abstract_string expr
+      | Closure (expr, envi) -> exp_to_abstract_string expr ;;
 
     (* Returns a printable string representation of an environment *)
     let env_to_string (env : env) : string =
-      failwith "env_to_string not implemented" ;;
-  end
-;;
+      let env_elt_to_string : (varid * value ref) -> string = 
+      fun elt ->
+        match elt with
+        | var_id, val_ref -> var_id ^ " -> " ^
+                            (value_to_string (!val_ref))
+      in
+      String.concat " | " (List.map env_elt_to_string env) ;;
+    
+  end ;;
 
 
 (*......................................................................
@@ -143,8 +156,30 @@ let eval_s (exp : expr) (_env : Env.env) : Env.value =
 (* The DYNAMICALLY-SCOPED ENVIRONMENT MODEL evaluator -- to be
    completed *)
    
-let eval_d (_exp : expr) (_env : Env.env) : Env.value =
-  failwith "eval_d not implemented" ;;
+let rec eval_d (_exp : expr) (_env : Env.env) : Env.value =
+  match _exp with
+    | Num (_) | Bool (_) | Raise -> Env.Val _exp 
+    | Var x -> Env.lookup _env x 
+    | Unop (op, e1) -> Env.Val (unopeval op e1)
+    | Binop (op, e1, e2) -> Env.Val (binopeval op (eval e1) (eval e2))
+    | Let (x, defi, body) -> 
+        eval_d body (Env.extend _env x (ref (Env.Val defi)))
+    | Letrec (x, defi, body) -> 
+      let uns_env = Env.extend _env x (ref (Env.Val Unassigned))               
+      in let x_val = eval_d defi uns_env
+      in eval_d body (Env.extend uns_env x (ref (x_val)))
+    | Fun (_f_arg, _f_body) -> 
+      eval_d _f_body (Env.extend _env _f_arg (ref (Env.lookup _env _f_arg)))
+    | App (arg1, arg2) -> 
+      (match arg1 with
+       | Fun (f_arg, f_body) -> eval_d f_body 
+                            (Env.extend _env f_arg (ref (eval_d arg2 _env)))
+       | _ -> eval_d (App ((eval arg1), (eval arg2))) _env)
+    | Conditional (c, t, e) -> 
+      if eval_d c _env = Env.Val (Bool (true)) 
+      then eval_d t _env 
+      else eval_d e _env
+    | Unassigned -> raise EvalException ;;
        
 (* The LEXICALLY-SCOPED ENVIRONMENT MODEL evaluator -- optionally
    completed as (part of) your extension *)
@@ -168,4 +203,4 @@ let eval_e _ =
    above, not the evaluate function, so it doesn't matter how it's set
    when you submit your solution.) *)
    
-let evaluate = eval_s ;;
+let evaluate = eval_d ;;
